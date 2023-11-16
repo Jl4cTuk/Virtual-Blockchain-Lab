@@ -2,16 +2,19 @@
 from datetime import *
 from hashlib import *
 from binascii import unhexlify, hexlify
+import json
+import os
 
 class Block:
-    def __init__(self, prev_hash, transaction, amount):
+    def __init__(self, prev_hash, lender, borrower, amount):
         self.next = None
         self.__data = {
             "prev_hash": prev_hash,
-            "transaction": transaction,
+            "lender": lender,
+            "borrower": borrower,
             "amount": amount,
             "hash": "",
-            "time": datetime.now().time()
+            "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
         self.__data["hash"] = self.make_hash()
 
@@ -39,8 +42,28 @@ def print_blocks(block):
         node = node.next
         print(node.get_data(), "\n")
 
+def get_last_block():
+    files = os.listdir('blockchain')
+    if not files:
+        return None
+    latest_file = max(files, key=lambda x: int(x.split('_')[1].split('.')[0]))
+    with open(f'blockchain/{latest_file}', 'r') as file:
+        return json.load(file)
+
+def write_block(lender, borrower, amount):
+    blockchain_folder = 'blockchain'
+    if not os.path.exists(blockchain_folder):
+        os.makedirs(blockchain_folder)
+
+    last_block = get_last_block()
+    prev_hash = last_block["hash"] if last_block else '0'*64
+
+    new_block = Block(prev_hash, lender, borrower, amount)
+
+    block_number = len(os.listdir(blockchain_folder)) + 1
+    with open(os.path.join(blockchain_folder, f'block_{block_number}.json'), 'w') as file:
+        json.dump(new_block.get_data(), file, indent=4)
+
 if __name__ == "__main__":
-    my_block = Block("0000f5fe09f0c817844ca2a6de0898fed095b86930ccc5d9763d8c87da6491ca", "Ivan", 10)
-    my_block.append("Dimka", 1337)
-    my_block.append("6opucbl4", 5555)
-    print_blocks(my_block)
+
+    pass
