@@ -3,5 +3,7 @@ services:
   web:
     build:
       context: .
+    image: v_blockchain_lab:1.0
+    container_name: v_blockchain_lab
     ports:
       - "5000:5000"
